@@ -1,15 +1,26 @@
+# Gradle
+.gradle/
+build/
+
+# Local config (rutas y secretos de tu máquina)
+local.properties
+secrets.properties
+
+# Android Studio / IntelliJ
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
 .DS_Store
-/build
-/captures
+captures/
+
+# Firmas y builds
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Native build
 .externalNativeBuild
 .cxx
-local.properties
+
+# Logs
+*.log
