@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.earthquakesapp.domain.model.Earthquake
+import com.example.earthquakesapp.presentation.util.formatRelativeTime
 import com.example.earthquakesapp.ui.theme.EarthquakesAppTheme
 
 @Composable
@@ -47,6 +48,10 @@ fun EarthquakeCard(
                     text = "Profundidad: ${earthquake.depth} km",
                     style = MaterialTheme.typography.bodySmall,
                 )
+                Text(
+                    text = formatRelativeTime(earthquake.time),
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
@@ -71,7 +76,7 @@ fun EarthquakeCardPreview() {
                         id = mag.toString(),
                         magnitude = mag,
                         place = "120 km SSW de Ciudad de México",
-                        time = 1_700_000_000_000,
+                        time = System.currentTimeMillis() - 3_600_000,
                         latitude = 19.4,
                         longitude = -99.1,
                         depth = 12.5,
