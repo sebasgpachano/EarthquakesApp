@@ -1,12 +1,16 @@
 package com.example.earthquakesapp.presentation.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -17,23 +21,42 @@ import com.example.earthquakesapp.ui.theme.EarthquakesAppTheme
 
 @Composable
 fun EarthquakeListScreen(
-    earthquakes: List<Earthquake>,
+    uiState: EarthquakeListUiState,
     onQuakeClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(
-            items = earthquakes,
-            key = { earthquake -> earthquake.id }
-        ) { earthquake ->
-            EarthquakeCard(
-                earthquake = earthquake,
-                onClick = { onQuakeClick(earthquake.id) }
-            )
+    Box(modifier = modifier.fillMaxSize()) {
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            uiState.error != null -> {
+                Text(
+                    text = uiState.error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(
+                        items = uiState.earthquakes,
+                        key = { earthquake -> earthquake.id }
+                    ) { earthquake ->
+                        EarthquakeCard(
+                            earthquake = earthquake,
+                            onClick = { onQuakeClick(earthquake.id) }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -41,38 +64,49 @@ fun EarthquakeListScreen(
 @Composable
 fun EarthquakeListRoute(
     onQuakeClick: (String) -> Unit,
-    viewModel: EarthquakeListViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: EarthquakeListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     EarthquakeListScreen(
-        earthquakes = uiState.earthquakes,
+        uiState = uiState,
         onQuakeClick = onQuakeClick,
         modifier = modifier
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Cargando")
 @Composable
-fun EarthquakeListScreenPreview() {
-    val sampleQuakes = listOf(1.5, 3.2, 4.6, 5.5, 6.8).mapIndexed { index, mag ->
-        Earthquake(
-            id = index.toString(),
-            magnitude = mag,
-            place = "120 km SSW de Ciudad de México",
-            time = System.currentTimeMillis() - (index + 1) * 3_600_000L,
-            latitude = 19.4,
-            longitude = -99.1,
-            depth = 12.5,
-            hasTsunami = false,
-            alertLevel = null,
-            detailUrl = ""
+fun ListLoadingPreview() {
+    EarthquakesAppTheme {
+        EarthquakeListScreen(
+            uiState = EarthquakeListUiState(isLoading = true),
+            onQuakeClick = {}
         )
+    }
+}
+
+@Preview(showBackground = true, name = "Error")
+@Composable
+fun ListErrorPreview() {
+    EarthquakesAppTheme {
+        EarthquakeListScreen(
+            uiState = EarthquakeListUiState(error = "No se pudo cargar. Revisa tu conexión."),
+            onQuakeClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Con datos")
+@Composable
+fun ListContentPreview() {
+    val sampleQuakes = listOf(2.1, 4.5, 6.2).mapIndexed { i, mag ->
+        Earthquake(i.toString(), mag, "Zona sísmica de ejemplo", System.currentTimeMillis(), 0.0, 0.0, 10.0, false, null, "")
     }
     EarthquakesAppTheme {
         EarthquakeListScreen(
-            earthquakes = sampleQuakes,
+            uiState = EarthquakeListUiState(earthquakes = sampleQuakes),
             onQuakeClick = {}
         )
     }
